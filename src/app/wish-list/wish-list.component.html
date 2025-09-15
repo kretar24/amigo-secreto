@@ -1,0 +1,216 @@
+<!-- Componente principal -->
+<div class="min-h-screen bg-gradient-to-br from-red-900 via-red-800 to-green-900 relative overflow-hidden">
+  
+  <!-- Elementos decorativos de fondo -->
+  <div class="absolute inset-0 overflow-hidden">
+    <div class="absolute top-10 left-4 w-3 h-3 bg-yellow-300 rounded-full animate-pulse opacity-70"></div>
+    <div class="absolute top-32 right-8 w-2 h-2 bg-white rounded-full animate-bounce opacity-60"></div>
+    <div class="absolute top-64 left-12 w-4 h-4 bg-green-300 rounded-full animate-pulse opacity-50"></div>
+    <div class="absolute bottom-32 right-16 w-3 h-3 bg-red-300 rounded-full animate-bounce opacity-60"></div>
+    <div class="absolute bottom-64 left-8 w-2 h-2 bg-yellow-400 rounded-full animate-pulse opacity-70"></div>
+  </div>
+
+  <!-- Header -->
+  <header class="relative z-10 text-center py-8 px-4">
+    <div class="inline-block">
+      <h1 class="text-4xl md:text-6xl font-bold text-white mb-2 drop-shadow-2xl">
+        🎄 Lista de Deseos 🎁
+      </h1>
+      <p class="text-lg md:text-xl text-green-100 font-medium drop-shadow-lg">
+        Amigo Secreto Navideño
+      </p>
+      <div class="mt-4 h-1 w-24 bg-gradient-to-r from-green-400 to-red-400 mx-auto rounded-full"></div>
+    </div>
+  </header>
+
+  <!-- Grid de personas -->
+  <main class="relative z-10 px-4 pb-8">
+    <div class="max-w-6xl mx-auto">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div 
+          *ngFor="let person of people" 
+          (click)="openModal(person)"
+          class="group bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 cursor-pointer overflow-hidden border-2 border-white/50"
+        >
+          <!-- Imagen de la persona -->
+          <div class="relative">
+            <img 
+              [src]="person.photo" 
+              [alt]="person.name"
+              class="w-full h-48 sm:h-56 object-cover group-hover:scale-110 transition-transform duration-500"
+            >
+            <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+
+          </div>
+
+          <!-- Información de la persona -->
+          <div class="p-6">
+            <h3 class="text-xl font-bold text-gray-800 mb-2 group-hover:text-red-700 transition-colors">
+              {{person.name}}
+            </h3>
+            <p class="text-gray-600 text-sm mb-4">
+              Toca para ver su lista de deseos
+            </p>
+            
+            <!-- Vista previa de deseos -->
+            <div class="space-y-2">
+              <div 
+                *ngFor="let wish of person.wishes?.slice(0, 2)" 
+                class="text-xs text-gray-500 bg-gray-100 px-3 py-1 rounded-full truncate"
+                [class.line-through]="wish.completed"
+              >
+                {{wish.text}}
+              </div>
+
+            </div>
+
+            <!-- Call to action -->
+            <div class="mt-4 flex items-center justify-between">
+              <span class="text-sm text-red-600 font-semibold group-hover:text-red-700">
+                Ver lista completa
+              </span>
+              <div class="w-8 h-8 bg-red-600 rounded-full flex items-center justify-center text-white group-hover:bg-red-700 transition-colors">
+                <svg class="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Modal -->
+  <div 
+    *ngIf="showModal" 
+    class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+    (click)="closeModal()"
+  >
+    <div 
+      class="bg-white rounded-3xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-hidden transform scale-100 transition-all duration-300"
+      (click)="$event.stopPropagation()"
+    >
+      
+      <!-- Header del modal -->
+      <div class="relative bg-gradient-to-r from-red-600 to-green-600 p-6 text-white">
+        <button 
+          (click)="closeModal()"
+          class="absolute top-4 right-4 w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+        
+        <div class="flex items-center space-x-4">
+          <img 
+            [src]="selectedPerson?.photo" 
+            [alt]="selectedPerson?.name"
+            class="w-16 h-16 rounded-full border-3 border-white/50 shadow-lg object-cover"
+          >
+          <div>
+            <h2 class="text-2xl font-bold">{{selectedPerson?.name}}</h2>
+            <p class="text-green-100">
+              {{getWishesCount(selectedPerson)}} deseos · {{getCompletedWishesCount(selectedPerson)}} cumplidos
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Contenido del modal -->
+      <div class="p-6 max-h-96 overflow-y-auto">
+        
+        <!-- Lista de deseos - Tabla -->
+        <div class="mb-6">
+          <!-- Tabla de deseos -->
+          <div *ngIf="wishes && wishes.length > 0" 
+               class="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-200">
+            <table class="w-full">
+              <thead>
+                <tr class="bg-gradient-to-r from-red-50 to-green-50 border-b border-gray-200">
+                  <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">
+                    🎁 Deseo
+                  </th>
+                  <th class="px-4 py-3 text-center text-sm font-semibold text-gray-700 w-24">
+                    
+                  </th>
+                  <th class="px-4 py-3 text-center text-sm font-semibold text-gray-700 w-16">
+                    
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr 
+                  *ngFor="let wish of wishes" 
+                  class="group border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                  [class.bg-green-25]="wish.completed"
+                >
+                  <td class="px-4 py-4">
+                    <p 
+                      class="text-gray-800 font-medium cursor-pointer transition-colors hover:text-red-600"
+                      [class.line-through]="wish.completed"
+                      [class.text-gray-500]="wish.completed"
+                      (click)="toggleWishComplete(wish)"
+                    >
+                      {{wish.list}}
+                    </p>
+                  </td>
+                  <td class="px-4 py-4 text-center">
+
+                  </td>
+                  <td class="px-4 py-4 text-center">
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Mensaje cuando no hay deseos -->
+          <div *ngIf="!wishes|| wishes.length === 0" 
+               class="text-center py-12 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300">
+            <div class="text-6xl mb-4">🎁</div>
+            <p class="text-gray-500 font-medium">No hay deseos aún</p>
+            <p class="text-sm text-gray-400 mt-1">¡Agrega el primer deseo navideño!</p>
+          </div>
+        </div>
+
+        <!-- Formulario para agregar deseo -->
+        <div *ngIf="showAddWish" class="mb-4 p-4 bg-green-50 rounded-xl border-2 border-green-200">
+          <textarea
+            [(ngModel)]="newWish"
+            placeholder="Escribe tu deseo navideño..."
+            class="w-full p-3 border border-green-300 rounded-lg resize-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
+            rows="3"
+          ></textarea>
+          <div class="flex space-x-2 mt-3">
+            <button 
+              (click)="addWish()"
+              [disabled]="!newWish.trim()"
+              class="flex-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-300 text-white px-4 py-2 rounded-lg font-semibold transition-colors"
+            >
+              ✨ Agregar Deseo
+            </button>
+            <button 
+              (click)="toggleAddWish()"
+              class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-colors"
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer del modal -->
+      <div class="border-t border-gray-200 p-4 bg-gray-50">
+        <button 
+          *ngIf="!showAddWish"
+          (click)="toggleAddWish()"
+          class="w-full bg-gradient-to-r from-red-600 to-green-600 hover:from-red-700 hover:to-green-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg"
+        >
+          🎄 Agregar Nuevo Deseo
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
